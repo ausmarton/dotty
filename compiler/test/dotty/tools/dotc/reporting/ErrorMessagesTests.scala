@@ -1943,4 +1943,35 @@ class ErrorMessagesTests extends ErrorMessagesTest {
         assertEquals("Modifier `opaque` is not allowed for this definition", errorMsg)
         assertEquals("opaque", x.flagsString)
       }
+
+  @Test def invalidReferenceToThis =
+    checkMessagesAfter(RefChecks.name) {
+      """| class A(n: String)
+         | class B extends A(this.getClass.getName)
+      """.stripMargin
+    }
+      .expect { (ictx, messages) ⇒
+        implicit val ctx: Context = ictx
+        assertMessageCount(1, messages)
+        val errorMsg = messages.head.msg
+        val InvalidUsageOfThis(x) :: Nil = messages
+        assertEquals("`this` can be used only in a class, object, or template", errorMsg)
+        assertEquals("this", x.show)
+      }
+
+  @Test def invalidEnclosingClass =
+    checkMessagesAfter(RefChecks.name) {
+      """| class B {
+         |  A.this
+         | }
+      """.stripMargin
+    }
+      .expect { (ictx, messages) ⇒
+        implicit val ctx: Context = ictx
+        assertMessageCount(1, messages)
+        val errorMsg = messages.head.msg
+        val InvalidEnclosingClass(x) :: Nil = messages
+        assertEquals("`A` is not an enclosing class", errorMsg)
+        assertEquals("A", x.show)
+      }
 }

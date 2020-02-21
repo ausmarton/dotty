@@ -34,9 +34,9 @@ trait TypeAssigner {
       case Some(c) if packageOK || !c.is(Package) =>
         c
       case _ =>
-        ctx.error(
-          if (qual.isEmpty) tree.show + " can be used only in a class, object, or template"
-          else qual.show + " is not an enclosing class", tree.sourcePos)
+        val error = if (qual.isEmpty) InvalidUsageOfThis(tree)
+        else InvalidEnclosingClass(qual)
+        ctx.error(error, tree.sourcePos)
         NoSymbol
     }
   }

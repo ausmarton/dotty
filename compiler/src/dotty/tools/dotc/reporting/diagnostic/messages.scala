@@ -2556,4 +2556,32 @@ object messages {
 
     val explanation: String = ""
   }
+
+  case class InvalidUsageOfThis(tree: untpd.Tree)(implicit ctx: Context)
+    extends Message(InvalidUsageOfThisID) {
+    val kind: String = "Syntax"
+    val msg: String = em"`${hl(tree.show)}` can be used only in a class, object, or template"
+
+    val explanation: String =
+      em"""`${hl(tree.show)}` cannot be used here.
+          |This can be fixed by either moving this expression to an existing class, object or template.
+          |Alternatively, wrap the expression in a new class, object or template.
+          |""".stripMargin
+  }
+
+  case class InvalidEnclosingClass(qual: Name)(implicit ctx: Context)
+    extends Message(InvalidEnclosingClassID) {
+    val kind: String = "Syntax"
+    val msg: String = em"`${hl(qual.show)}` is not an enclosing class"
+
+    val explanation: String =
+      em"""In order to use this expression, `${hl(qual.show)}` would need to be defined as an enclosing class.
+          |For example:
+          |${hl("class")} ${qual.show} {
+          | ${hl("class")} existingClass {
+          |   // use an expression like `${qual.show}.this` here
+          | }
+          |}
+          |""".stripMargin
+  }
 }
